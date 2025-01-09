@@ -15,32 +15,78 @@ const queryClient = new QueryClient();
 const ProtectedAdminRoute = ({ children }: { children: React.ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const checkAdminStatus = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        setIsAdmin(false);
+      try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          setError('Failed to get session');
+          setIsLoading(false);
+          return;
+        }
+        
+        if (!session) {
+          console.log('No session found');
+          setIsAdmin(false);
+          setIsLoading(false);
+          return;
+        }
+
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', session.user.id)
+          .single();
+
+        if (profileError) {
+          console.error('Profile error:', profileError);
+          setError('Failed to check admin status');
+          setIsLoading(false);
+          return;
+        }
+
+        console.log('Profile data:', profile);
+        setIsAdmin(profile?.is_admin || false);
         setIsLoading(false);
-        return;
+      } catch (err) {
+        console.error('Unexpected error:', err);
+        setError('An unexpected error occurred');
+        setIsLoading(false);
       }
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', session.user.id)
-        .single();
-
-      setIsAdmin(profile?.is_admin || false);
-      setIsLoading(false);
     };
 
     checkAdminStatus();
   }, []);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-lg text-muted-foreground">Checking admin access...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <p className="text-lg text-red-500">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="text-primary hover:underline"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (!isAdmin) {
