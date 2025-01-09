@@ -42,18 +42,45 @@ const Login = () => {
           supabaseClient={supabase}
           appearance={{
             theme: ThemeSupa,
+            style: {
+              button: {
+                backgroundColor: 'var(--background-color, hsl(var(--primary)))',
+                color: '#ffffff',
+              },
+              anchor: {
+                color: 'hsl(var(--primary))',
+              },
+              input: {
+                color: '#ffffff',
+                backgroundColor: 'rgb(17 24 39 / 0.8)',
+              },
+            },
             variables: {
               default: {
                 colors: {
                   brand: 'hsl(var(--primary))',
                   brandAccent: 'hsl(var(--primary))',
+                  brandButtonText: '#ffffff',
+                  inputText: '#ffffff',
+                },
+              },
+              dark: {
+                colors: {
+                  brand: '#8b5cf6',
+                  brandAccent: '#7c3aed',
+                  brandButtonText: '#ffffff',
+                  inputBackground: 'rgb(17 24 39 / 0.8)',
+                  inputText: '#ffffff',
+                  inputLabelText: '#ffffff',
+                  inputPlaceholder: '#9ca3af',
                 }
               }
             },
             className: {
               container: 'backdrop-blur-lg',
-              button: 'bg-primary hover:bg-primary/90 text-white',
-              input: 'bg-white/80 dark:bg-gray-900/80',
+              button: 'dark:!bg-violet-600 dark:hover:!bg-violet-700',
+              input: 'bg-white/80 dark:bg-gray-900/80 dark:text-white',
+              label: 'dark:text-white',
             }
           }}
           providers={[]}
